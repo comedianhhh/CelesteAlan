@@ -1,5 +1,5 @@
 #!/bin/bash
 libs="-luser32" #if adding a space before the value, making it invalid when passed to the compiler.
-warnings=-Wno-writable-strings
+warnings="-Wno-writable-strings -Wno-format-security"
 
-clang src/main.cpp -oAlanAdventure.exe $libs $warnings
+clang++ -g src/CPPs/main.cpp -oAlanAdventure.exe $libs $warnings

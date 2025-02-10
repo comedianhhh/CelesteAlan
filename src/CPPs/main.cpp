@@ -1,3 +1,5 @@
+#include "../Headers/Alan_lib.h"
+
 // #############################################################################
 //                           Platform Globals
 // #############################################################################
@@ -27,6 +29,26 @@ void platform_update_window();
 
 static HWND window;
 // #############################################################################
+//                           Windows Callback
+// #############################################################################
+
+LRESULT CALLBACK windows_window_callback(HWND window, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+
+    LRESULT result = 0;
+    switch (msg)
+    {
+        case WM_CLOSE:
+            running = false;
+            break;
+
+        default:
+            result = DefWindowProcA(window,msg,wParam,lParam);
+    }
+    return result;
+}
+
+// #############################################################################
 //                           Platform Implementation
 // #############################################################################
 
@@ -39,7 +61,7 @@ bool platform_create_window(int width, int height, char* title)
     wc.hIcon=LoadIcon(instance,IDI_APPLICATION);
     wc.hCursor=LoadCursor(instance,IDC_ARROW); // This means we decide the look of the cursor
     wc.lpszClassName=title; //This is not the title, just a unique indentifier
-    wc.lpfnWndProc=DefWindowProcA; //Callback for Input into the Window
+    wc.lpfnWndProc=windows_window_callback; //Callback for Input into the Window
 
     // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexa
     if(!RegisterClassA(&wc))
@@ -85,10 +107,17 @@ void platform_update_window()
 int main()
 {
     platform_create_window(1280,720, "ALAN GAME");
-    while(1)
+    while(running)
     {
         //update
         platform_update_window();
+        SM_ERROR("This is an error message %d", 5);
+        SM_WARN("This is a warning message %d", 5);
+        SM_TRACE("This is a trace message %d", 5);
+        SM_ASSERT(false,"Assertion not Hit!");
+        
+        
     }
     return 0;
 }
+
