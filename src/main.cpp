@@ -88,7 +88,7 @@ int main()
     while(1)
     {
         //update
-        //platform_update_window();
+        platform_update_window();
     }
     return 0;
 }
