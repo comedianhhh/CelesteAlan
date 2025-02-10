@@ -30,3 +30,16 @@
 *.exe
 *.out
 *.app
+*.pdb
+*.dll
+*.exp
+*.zip
+*.ilk
+
+*.nativecodeanalysis.xml
+build
+.vs
+
+c_cpp_properties.json
+settings.json
+.clangd

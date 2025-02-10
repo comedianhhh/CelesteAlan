@@ -5,7 +5,7 @@
       "name": "Windows Launch",
       "type": "cppvsdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/schnitzel.exe",
+      "program": "${workspaceFolder}/AlanAdventure.exe",
       "args": [],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal"
