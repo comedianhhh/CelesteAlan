@@ -91,7 +91,7 @@ void _log(char* prefix, char* msg, TextColor textColor,Args... args)
 
 struct BumpAllocator
 {
-    size_t size;
+    size_t capacity;
     size_t used;
     char* memory;
 };
@@ -99,11 +99,11 @@ struct BumpAllocator
 BumpAllocator make_bump_allocator(size_t size, void* memory)
 {
     BumpAllocator result = {};
-    result.memory=(char*) malloc(szie);
+    result.memory=(char*) malloc(size);
     if(result.memory)
     {
-        result.size
-        memset(result.memory,0,result.size);// sets the memory to 0
+        result.capacity=size;
+        memset(result.memory,0,size);// sets the memory to 0
     }
     else
     {
