@@ -19,6 +19,8 @@
 // #############################################################################
 #ifdef _WIN32
 #define DEBUG_BREAK() __debugbreak()
+#define EXPORT_FN __declspec(dllexport)
+
 
 #endif
 #define b8 char

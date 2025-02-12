@@ -1,29 +1,26 @@
-#include "game.h"
-#include "assets.h"
+#pragma once
+#include "input.h"
+#include "render_interface.h"
 #include "Alan_lib.h"
 
-
 // #############################################################################
-//                           Game Constants
+//                           Game Globals
 // #############################################################################
+constexpr int tset = 5;
 
 // #############################################################################
 //                           Game Structs
 // #############################################################################
 
-
-// #############################################################################
-//                           Game Functions
-// #############################################################################
-
-//https://learn.microsoft.com/en-us/cpp/cpp/declspec?view=msvc-170
-extern "C" EXPORT_FN void update_game(RenderData* renderDataIn, Input* inputIn)
+struct GameState
 {
-    if(renderData != renderDataIn)
-    {
-        renderData = renderDataIn;
-        input = inputIn;
-    }
+    IVec2 playerPos;
+};
 
-    draw_sprite(SPRITE_DICE,{100.0f,100.0f},{100.0f,100.0f});
-}
+// #############################################################################
+//                           Game Functions (Exposed)
+// #############################################################################
+
+extern "C" EXPORT_FN void update_game(RenderData* renderDataIn, Input* input);
+
+    
