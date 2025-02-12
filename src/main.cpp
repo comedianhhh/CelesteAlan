@@ -1,9 +1,11 @@
 #include "Alan_lib.h"
 
-#include "platform.h"
-
 #include "input.h"
 
+// Unity compile
+#include "game.cpp"
+
+#include "platform.h"
 #define APIENTRY
 #define GL_GLEXT_PROTOTYPES
 #include"glcorearb.h"
@@ -16,9 +18,9 @@
 int main()
 {
     BumpAllocator transientStorage = make_bump_allocator(MB(50));
-    platform_create_window(1280,720, "ALAN GAME");
+    platform_create_window(1200,720, "ALAN GAME");
 
-    input.screenSizeX = 1280;
+    input.screenSizeX = 1200;
     input.screenSizeY = 720;
 
     gl_init(&transientStorage);
@@ -26,6 +28,7 @@ int main()
     {
         //update
         platform_update_window();
+        update_game();
         gl_render();
 
         platform_sawp_buffers();
