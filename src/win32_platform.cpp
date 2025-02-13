@@ -1,6 +1,6 @@
 
-#include "platform.h"
-#include "Alan_lib.h"
+#include "Header/platform.h"
+#include "Header/Alan_lib.h"
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX

@@ -1,5 +1,5 @@
-#include "gl_renderer.h"
-#include "render_interface.h"
+#include "Header/gl_renderer.h"
+#include "Header/render_interface.h"
 
 // To Load PNG Files
 #define STB_IMAGE_IMPLEMENTATION
@@ -59,7 +59,7 @@ static void APIENTRY gl_debug_callback(GLenum source, GLenum type, GLuint id, GL
 GLuint gl_create_shader(int shaderType, char* shaderPath, BumpAllocator* transientStorage)
 {
   int fileSize = 0;
-  char* shaderHeader = read_file("src/shader_header.h", &fileSize, transientStorage);
+  char* shaderHeader = read_file("src/Header/shader_header.h", &fileSize, transientStorage);
   char* shaderSource = read_file(shaderPath, &fileSize, transientStorage);
   if(!shaderHeader)
   {

@@ -1,10 +1,10 @@
-#include "Alan_lib.h"
-#include "input.h"
-#include "game.h"
+#include "Header/Alan_lib.h"
+#include "Header/input.h"
+#include "Header/game.h"
 
-#include "sound.h"
+#include "Header/sound.h"
 
-#include "ui.h"
+#include "Header/ui.h"
 #define APIENTRY
 #define GL_GLEXT_PROTOTYPES
 #include"glcorearb.h"
@@ -12,7 +12,7 @@
 // #############################################################################
 //                           Platform Includes
 // #############################################################################
-#include "platform.h"
+#include "Header/platform.h"
 #ifdef _WIN32
 #include "win32_platform.cpp"
 const char* gameLibName = "game.dll";
