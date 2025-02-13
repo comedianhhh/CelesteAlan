@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 // This is to get malloc
-#include<stdlib.h>
+#include <stdlib.h>
 
 // This is to get memset
 #include <string.h>
@@ -15,11 +15,24 @@
 #include <math.h>
 
 // #############################################################################
+//                           Constants
+// #############################################################################
+// WAV Files
+constexpr int NUM_CHANNELS = 2;
+constexpr int SAMPLE_RATE = 44100;
+
+// #############################################################################
 //                           Defines
 // #############################################################################
 #ifdef _WIN32
 #define DEBUG_BREAK() __debugbreak()
 #define EXPORT_FN __declspec(dllexport)
+#elif __linux__
+#define DEBUG_BREAK() __builtin_debugtrap()
+#define EXPORT_FN
+#elif __APPLE__
+#define DEBUG_BREAK() __builtin_trap()
+#define EXPORT_FN
 #endif
 
 #define line_id(index) (size_t)((__LINE__ << 16) | (index))
@@ -34,32 +47,31 @@
 // #############################################################################
 //                           Logging
 // #############################################################################
-
 enum TextColor
-{
-    TEXT_COLOR_BLACK,
-    TEXT_COLOR_RED,
-    TEXT_COLOR_GREEN,
-    TEXT_COLOR_YELLOW,
-    TEXT_COLOR_BLUE,
-    TEXT_COLOR_MAGENTA,
-    TEXT_COLOR_CYAN,
-    TEXT_COLOR_WHITE,
-    TEXT_COLOR_BRIGHT_BLACK,
-    TEXT_COLOR_BRIGHT_RED,
-    TEXT_COLOR_BRIGHT_GREEN,
-    TEXT_COLOR_BRIGHT_YELLOW,
-    TEXT_COLOR_BRIGHT_BLUE,
-    TEXT_COLOR_BRIGHT_MAGENTA,
-    TEXT_COLOR_BRIGHT_CYAN,
-    TEXT_COLOR_BRIGHT_WHITE,
-    TEXT_COLOR_COUNT
+{  
+  TEXT_COLOR_BLACK,
+  TEXT_COLOR_RED,
+  TEXT_COLOR_GREEN,
+  TEXT_COLOR_YELLOW,
+  TEXT_COLOR_BLUE,
+  TEXT_COLOR_MAGENTA,
+  TEXT_COLOR_CYAN,
+  TEXT_COLOR_WHITE,
+  TEXT_COLOR_BRIGHT_BLACK,
+  TEXT_COLOR_BRIGHT_RED,
+  TEXT_COLOR_BRIGHT_GREEN,
+  TEXT_COLOR_BRIGHT_YELLOW,
+  TEXT_COLOR_BRIGHT_BLUE,
+  TEXT_COLOR_BRIGHT_MAGENTA,
+  TEXT_COLOR_BRIGHT_CYAN,
+  TEXT_COLOR_BRIGHT_WHITE,
+  TEXT_COLOR_COUNT
 };
 
-template<typename... Args>
-void _log(char* prefix, char* msg, TextColor textColor,Args... args)
+template <typename ...Args>
+void _log(char* prefix, char* msg, TextColor textColor, Args... args)
 {
-    static char* TextColorTable[TEXT_COLOR_COUNT] = 
+  static char* TextColorTable[TEXT_COLOR_COUNT] = 
   {    
     "\x1b[30m", // TEXT_COLOR_BLACK
     "\x1b[31m", // TEXT_COLOR_RED
@@ -78,6 +90,7 @@ void _log(char* prefix, char* msg, TextColor textColor,Args... args)
     "\x1b[96m", // TEXT_COLOR_BRIGHT_CYAN
     "\x1b[97m", // TEXT_COLOR_BRIGHT_WHITE
   };
+
   char formatBuffer[8192] = {};
   sprintf(formatBuffer, "%s %s %s \033[0m", TextColorTable[textColor], prefix, msg);
 
@@ -87,9 +100,9 @@ void _log(char* prefix, char* msg, TextColor textColor,Args... args)
   puts(textBuffer);
 }
 
-#define SM_TRACE(msg, ...) _log("TRACE", msg, TEXT_COLOR_GREEN, ##__VA_ARGS__)
-#define SM_WARN(msg, ...) _log("WARN", msg, TEXT_COLOR_YELLOW, ##__VA_ARGS__)
-#define SM_ERROR(msg, ...) _log("ERROR", msg, TEXT_COLOR_RED, ##__VA_ARGS__)
+#define SM_TRACE(msg, ...) _log("TRACE: ", msg, TEXT_COLOR_GREEN, ##__VA_ARGS__);
+#define SM_WARN(msg, ...) _log("WARN: ", msg, TEXT_COLOR_YELLOW, ##__VA_ARGS__);
+#define SM_ERROR(msg, ...) _log("ERROR: ", msg, TEXT_COLOR_RED, ##__VA_ARGS__);
 
 #define SM_ASSERT(x, msg, ...)    \
 {                                 \
@@ -97,16 +110,13 @@ void _log(char* prefix, char* msg, TextColor textColor,Args... args)
   {                               \
     SM_ERROR(msg, ##__VA_ARGS__); \
     DEBUG_BREAK();                \
-    SM_ERROR("Assertion HIT!");   \
+    SM_ERROR("Assertion HIT!")    \
   }                               \
 }
-
 
 // #############################################################################
 //                           Array
 // #############################################################################
-
-
 template<typename T, int N>
 struct Array
 {
@@ -146,59 +156,55 @@ struct Array
   }
 };
 
-
 // #############################################################################
 //                           Bump Allocator
 // #############################################################################
-
 struct BumpAllocator
 {
-    size_t capacity;
-    size_t used;
-    char* memory;
+  size_t capacity;
+  size_t used;
+  char* memory;
 };
 
 BumpAllocator make_bump_allocator(size_t size)
 {
-    BumpAllocator result = {};
-    result.memory=(char*) malloc(size);
-    if(result.memory)
-    {
-        result.capacity=size;
-        memset(result.memory,0,size);// sets the memory to 0
-    }
-    else
-    {
-        SM_ASSERT(false,"Failed to allocate memory!");
-    }
+  BumpAllocator ba = {};
+  
+  ba.memory = (char*)malloc(size);
+  if(ba.memory)
+  {
+    ba.capacity = size;
+    memset(ba.memory, 0, size); // Sets the memory to 0
+  }
+  else
+  {
+    SM_ASSERT(false, "Failed to allocate Memory!");
+  }
 
-    return result;
+  return ba;
 }
-
 
 char* bump_alloc(BumpAllocator* bumpAllocator, size_t size)
 {
-    char* result = nullptr;
-    size_t allignedSize=(size+ 7) & ~7; // this makes sure the first 4 bits are 0
-    if(bumpAllocator->used + allignedSize <= bumpAllocator->capacity)
-    {
-        result = bumpAllocator->memory + bumpAllocator->used;
-        bumpAllocator->used += allignedSize;
-    }
-    else
-    {
-        SM_ASSERT(false,"BumpAllocator is full!");
-    }
+  char* result = nullptr;
 
-    return result;
+  size_t allignedSize = (size + 7) & ~ 7; // This makes sure the first 4 bits are 0 
+  if(bumpAllocator->used + allignedSize <= bumpAllocator->capacity)
+  {
+    result = bumpAllocator->memory + bumpAllocator->used;
+    bumpAllocator->used += allignedSize;
+  }
+  else
+  {
+    SM_ASSERT(false, "BumpAllocator is full");
+  }
+
+  return result;
 }
-
-
 
 // #############################################################################
 //                           File I/O
 // #############################################################################
-
 long long get_timestamp(const char* file)
 {
   struct stat file_stat = {};
@@ -239,6 +245,7 @@ long get_file_size(const char* filePath)
 
   return fileSize;
 }
+
 /*
 * Reads a file into a supplied buffer. We manage our own
 * memory and therefore want more control over where it 
@@ -284,6 +291,7 @@ char* read_file(const char* filePath, int* fileSize, BumpAllocator* bumpAllocato
 
   return file; 
 }
+
 void write_file(const char* filePath, char* buffer, int size)
 {
   SM_ASSERT(filePath, "No filePath supplied!");
@@ -322,6 +330,7 @@ bool copy_file(const char* fileName, const char* outputName, char* buffer)
 
   return true;
 }
+
 bool copy_file(const char* fileName, const char* outputName, BumpAllocator* bumpAllocator)
 {
   char* file = 0;
@@ -340,7 +349,6 @@ bool copy_file(const char* fileName, const char* outputName, BumpAllocator* bump
 // #############################################################################
 //                           Math stuff
 // #############################################################################
-
 int sign(int x)
 {
   return (x >= 0)? 1 : -1;
@@ -393,10 +401,12 @@ float min(float a, float b)
 
 float approach(float current, float target, float increase)
 {
+  // if we are below the target, increase the current value
   if(current < target)
   {
     return min(current + increase, target);
   }
+  // if we are above the target, decrease the current value
   return max(current - increase, target);
 }
 
@@ -466,21 +476,21 @@ Vec2 vec_2(IVec2 v)
   return Vec2{(float)v.x, (float)v.y};
 }
 
-// Vec2 lerp(Vec2 a, Vec2 b, float t)
-// {
-//   Vec2 result;
-//   result.x = lerp(a.x, b.x, t);
-//   result.y = lerp(a.y, b.y, t);
-//   return result;
-// }
+Vec2 lerp(Vec2 a, Vec2 b, float t)
+{
+  Vec2 result;
+  result.x = lerp(a.x, b.x, t);
+  result.y = lerp(a.y, b.y, t);
+  return result;
+}
 
-// IVec2 lerp(IVec2 a, IVec2 b, float t)
-// {
-//   IVec2 result;
-//   result.x = (int)floorf(lerp((float)a.x, (float)b.x, t));
-//   result.y = (int)floorf(lerp((float)a.y, (float)b.y, t));
-//   return result;
-// }
+IVec2 lerp(IVec2 a, IVec2 b, float t)
+{
+  IVec2 result;
+  result.x = (int)floorf(lerp((float)a.x, (float)b.x, t));
+  result.y = (int)floorf(lerp((float)a.y, (float)b.y, t));
+  return result;
+}
 
 struct Vec4
 {
@@ -514,7 +524,6 @@ struct Vec4
     return x == other.x && y == other.y && z == other.z && w == other.w;
   }
 };
-
 
 struct Mat4
 {
@@ -551,10 +560,6 @@ struct Mat4
   }
 };
 
-
-
-
-//https://learnwebgl.brown37.net/08_projections/projections_ortho.html
 Mat4 orthographic_projection(float left, float right, float top, float bottom)
 {
   Mat4 result = {};
@@ -611,6 +616,69 @@ bool rect_collision(IRect a, IRect b)
 }
 
 
+
+// #############################################################################
+//                           WAV File stuff
+// #############################################################################
+// Wave Files are seperated into chunks, 
+// struct chunk
+// {
+//   unsigned int id;
+//   unsigned int size; // In bytes
+//   ...
+// }
+// we are ASSUMING!!!! That we have a "Riff Chunk"
+// followed by a "Format Chunk" followed by a
+// "Data Chunk", this CAN! be wrong ofcourse
+struct WAVHeader
+{
+  // Riff Chunk
+	unsigned int riffChunkId;
+	unsigned int riffChunkSize;
+	unsigned int format;
+
+  // Format Chunk
+	unsigned int formatChunkId;
+	unsigned int formatChunkSize;
+	unsigned short audioFormat;
+	unsigned short numChannels;
+	unsigned int sampleRate;
+	unsigned int byteRate;
+	unsigned short blockAlign;
+	unsigned short bitsPerSample;
+
+  // Data Chunk
+	unsigned char dataChunkId[4];
+	unsigned int dataChunkSize;
+};
+
+struct WAVFile
+{
+	WAVHeader header;
+	char dataBegin;
+};
+
+WAVFile* load_wav(char* path, BumpAllocator* bumpAllocator)
+{
+	int fileSize = 0;
+	WAVFile* wavFile = (WAVFile*)read_file(path, &fileSize, bumpAllocator);
+	if(!wavFile) 
+  { 
+    SM_ASSERT(0, "Failed to load Wave File: %s", path);
+    return nullptr;
+  }
+
+	SM_ASSERT(wavFile->header.numChannels == NUM_CHANNELS, 
+            "We only support 2 channels for now!");
+	SM_ASSERT(wavFile->header.sampleRate == SAMPLE_RATE, 
+            "We only support 44100 sample rate for now!");
+
+	SM_ASSERT(memcmp(&wavFile->header.dataChunkId, "data", 4) == 0, 
+						"WAV File not in propper format");
+
+	return wavFile;
+}
+
 //#######################################################################
 //                          Normal Colors
 //#######################################################################
@@ -620,5 +688,21 @@ constexpr Vec4 COLOR_GREEN = {0.0f, 1.0f, 0.0f, 1.0f};
 constexpr Vec4 COLOR_BLUE = {0.0f, 0.0f, 1.0f, 1.0f};
 constexpr Vec4 COLOR_YELLOW = {1.0f, 1.0f, 0.0f, 1.0f};
 constexpr Vec4 COLOR_BLACK = {0.0f, 0.0f, 0.0f, 1.0};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

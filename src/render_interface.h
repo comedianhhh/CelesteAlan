@@ -1,25 +1,25 @@
 #pragma once
+
 #include "assets.h"
 #include "shader_header.h"
 #include "Alan_lib.h"
-// #############################################################################
-//                           Render Constants
-// #############################################################################
 
+
+// #############################################################################
+//                           Renderer Constants
+// #############################################################################
 int RENDER_OPTION_FLIP_X = BIT(0);
 int RENDER_OPTION_FLIP_Y = BIT(1);
 
 // #############################################################################
 //                           Renderer Structs
 // #############################################################################
-
 enum Layer
 {
   LAYER_GAME,
   LAYER_UI,
   LAYER_COUNT
 };
-
 
 struct OrthographicCamera2D
 {
@@ -36,6 +36,13 @@ struct DrawData
   float layer = 0.0f;
 };
 
+struct TextData
+{
+  Material material = {};
+  float fontSize = 1.0f;
+  int renderOptions;
+  float layer = 0.0f;
+};
 
 struct Glyph
 {
@@ -47,15 +54,15 @@ struct Glyph
 
 struct RenderData
 {
-    OrthographicCamera2D gameCamera;
-    OrthographicCamera2D uiCamera;
-    
+  OrthographicCamera2D gameCamera;
+  OrthographicCamera2D uiCamera;
 
-    Glyph glyphs[127];
+  int fontHeight;
+  Glyph glyphs[127];
 
-    int transformCount;
-    Array<Material, 1000> materials;
-    Array<Transform, 1000> transforms;
+  Array<Material, 1000> materials;
+  Array<Transform, 1000> transforms;
+  Array<Transform, 1000> uiTransforms;
 };
 
 // #############################################################################
@@ -87,7 +94,23 @@ IVec2 screen_to_world(IVec2 screenPos)
   return {xPos, yPos};
 }
 
-
+int animate(float* time, int frameCount, float duration = 1.0f)
+{
+  while(*time > duration)
+  {
+    *time -= duration;
+  }
+  
+  int animationIdx = (int)((*time / duration) * frameCount);
+  
+  // Clamp
+  if (animationIdx >= frameCount)
+  {
+    animationIdx = frameCount - 1;
+  }
+  
+  return animationIdx;
+}
 
 int get_material_idx(Material material = {})
 {
@@ -107,6 +130,7 @@ int get_material_idx(Material material = {})
 
   return renderData->materials.add(material);
 }
+
 float get_layer(Layer layer, float subLayer = 0.0f)
 {
   float floatLayer = (float)layer;
@@ -114,6 +138,7 @@ float get_layer(Layer layer, float subLayer = 0.0f)
   float result = layerStep * floatLayer + subLayer / 1000.0f;
   return result;
 }
+
 Transform get_transform(SpriteID spriteID, Vec2 pos, Vec2 size = {}, DrawData drawData = {})
 {
   Sprite sprite = get_sprite(spriteID);
@@ -137,20 +162,6 @@ Transform get_transform(SpriteID spriteID, Vec2 pos, Vec2 size = {}, DrawData dr
 // #############################################################################
 //                           Renderer Functions
 // #############################################################################
-
-// void draw_sprite(SpriteID spriteID, Vec2 pos)
-// {
-//     Sprite sprite = get_sprite(spriteID);
-    
-//     Transform transform = {};
-//     transform.pos = pos - vec_2(sprite.size) / 2.0f;
-//     transform.size = vec_2(sprite.size);
-//     transform.atlasOffset = sprite.atlasOffset;
-//     transform.spriteSize = sprite.size;
-
-//     renderData->transforms[renderData->transformCount++] = transform;
-
-// }
 void draw_quad(Transform transform)
 {
   renderData->transforms.add(transform);
@@ -171,4 +182,70 @@ void draw_sprite(SpriteID spriteID, Vec2 pos, DrawData drawData = {})
 void draw_sprite(SpriteID spriteID, IVec2 pos, DrawData drawData = {})
 {
   draw_sprite(spriteID, vec_2(pos), drawData);
+}
+
+// #############################################################################
+//                     Render Interface UI Rendering
+// #############################################################################
+void draw_ui_sprite(SpriteID spriteID, Vec2 pos, Vec2 size = {}, DrawData drawData = {})
+{
+  Transform transform = get_transform(spriteID, pos, size, drawData);
+  renderData->uiTransforms.add(transform);
+}
+
+void draw_ui_sprite(SpriteID spriteID, Vec2 pos, DrawData drawData = {})
+{
+  Transform transform = get_transform(spriteID, pos, {}, drawData);
+  renderData->uiTransforms.add(transform);
+}
+
+void draw_ui_sprite(SpriteID spriteID, IVec2 pos, DrawData drawData = {})
+{
+  draw_ui_sprite(spriteID, vec_2(pos), drawData);
+}
+
+// #############################################################################
+//                     Render Interface UI Font Rendering
+// #############################################################################
+void draw_ui_text(char* text, Vec2 pos, TextData textData = {})
+{
+  SM_ASSERT(text, "No Text Supplied!");
+  if(!text)
+  {
+    return;
+  }
+
+  Vec2 origin = pos;
+  while(char c = *(text++))
+  {
+    if(c == '\n')
+    {
+      pos.y += renderData->fontHeight * textData.fontSize;
+      pos.x = origin.x;
+      continue;
+    }
+
+    Glyph glyph = renderData->glyphs[c];
+    Transform transform = {};
+    transform.materialIdx = get_material_idx(textData.material);
+    transform.pos.x = pos.x + glyph.offset.x * textData.fontSize;
+    transform.pos.y = pos.y - glyph.offset.y * textData.fontSize;
+    transform.atlasOffset = glyph.textureCoords;
+    transform.spriteSize = glyph.size;
+    transform.size = vec_2(glyph.size) * textData.fontSize;
+    transform.renderOptions = textData.renderOptions | RENDERING_OPTION_FONT;
+    transform.layer = textData.layer;
+
+    renderData->uiTransforms.add(transform);
+
+    // Advance the Glyph
+    pos.x += glyph.advance.x * textData.fontSize;
+  }
+}
+
+template <typename... Args>
+void draw_format_ui_text(char* format, Vec2 pos, Args... args)
+{
+  char* text = format_text(format, args...);
+  draw_ui_text(text, pos);
 }

@@ -20,7 +20,7 @@ enum SpriteID
   SPRITE_SOLID_02,  
   SPRITE_BUTTON_PLAY,
   SPRITE_BUTTON_SAVE,
-
+  SPRITE_LOGO_ALAN,
   SPRITE_COUNT
 };
 
@@ -45,6 +45,12 @@ Sprite get_sprite(SpriteID spriteID)
     {
       sprite.atlasOffset = {0, 0};
       sprite.size = {1, 1};
+      break;
+    }
+    case SPRITE_LOGO_ALAN:
+    {
+      sprite.atlasOffset = {0, 48};
+      sprite.size = {144, 48};
       break;
     }
 

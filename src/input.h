@@ -1,7 +1,9 @@
 #pragma once
+
 #include "Alan_lib.h"
+
 // #############################################################################
-//                           Input Struct
+//                           Input Structs
 // #############################################################################
 enum KeyCodeID
 {
@@ -81,16 +83,17 @@ struct Key
   b8 justReleased;
   unsigned char halfTransitionCount;
 };
+
 struct Input
 {
   IVec2 screenSize;
 
-  //Screen
+  // Screen
   IVec2 prevMousePos;
   IVec2 mousePos;
   IVec2 relMouse;
 
- // World
+  // World
   IVec2 prevMousePosWorld;
   IVec2 mousePosWorld;
   IVec2 relMouseWorld;
@@ -106,12 +109,11 @@ static Input* input;
 // #############################################################################
 //                           Input Functions
 // #############################################################################
-
 bool key_pressed_this_frame(KeyCodeID keyCode)
 {
-    Key key = input->keys[keyCode];
-    bool result = key.isDown && key.halfTransitionCount ==1 || key.halfTransitionCount > 1;
-    return result;
+  Key key = input->keys[keyCode];
+  bool result = key.isDown && key.halfTransitionCount == 1 || key.halfTransitionCount > 1;
+  return result;
 }
 
 bool key_released_this_frame(KeyCodeID keyCode)
