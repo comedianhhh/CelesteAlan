@@ -20,9 +20,11 @@
 #ifdef _WIN32
 #define DEBUG_BREAK() __debugbreak()
 #define EXPORT_FN __declspec(dllexport)
-
-
 #endif
+
+#define line_id(index) (size_t)((__LINE__ << 16) | (index))
+#define ArraySize(x) (sizeof((x)) / sizeof((x)[0]))
+
 #define b8 char
 #define BIT(x) 1 << (x)
 #define KB(x) ((unsigned long long)1024 * x)
@@ -98,6 +100,53 @@ void _log(char* prefix, char* msg, TextColor textColor,Args... args)
     SM_ERROR("Assertion HIT!");   \
   }                               \
 }
+
+
+// #############################################################################
+//                           Array
+// #############################################################################
+
+
+template<typename T, int N>
+struct Array
+{
+  static constexpr int maxElements = N;
+  int count = 0;
+  T elements[N];
+
+  T& operator[](int idx)
+  {
+    SM_ASSERT(idx >= 0, "idx negative!");
+    SM_ASSERT(idx < count, "Idx out of bounds!");
+    return elements[idx];
+  }
+
+  int add(T element)
+  {
+    SM_ASSERT(count < maxElements, "Array Full!");
+    elements[count] = element;
+    return count++;
+  }
+
+  void remove_idx_and_swap(int idx)
+  {
+    SM_ASSERT(idx >= 0, "idx negative!");
+    SM_ASSERT(idx < count, "idx out of bounds!");
+    elements[idx] = elements[--count];
+  }
+
+  void clear()
+  {
+    count = 0;
+  }
+
+  bool is_full()
+  {
+    return count == N;
+  }
+};
+
+
 // #############################################################################
 //                           Bump Allocator
 // #############################################################################
@@ -302,59 +351,59 @@ float sign(float x)
   return (x >= 0.0f)? 1.0f : -1.0f;
 }
 
-// int min(int a, int b)
-// {
-//   return (a < b)? a : b;
-// }
+int min(int a, int b)
+{
+  return (a < b)? a : b;
+}
 
-// int max(int a, int b)
-// {
-//   return (a > b)? a : b;
-// }
+int max(int a, int b)
+{
+  return (a > b)? a : b;
+}
 
-// long long max(long long a, long long b)
-// {
-//   if(a > b)
-//   {
-//     return a;
-//   }
+long long max(long long a, long long b)
+{
+  if(a > b)
+  {
+    return a;
+  }
 
-//   return b;
-// }
+  return b;
+}
 
-// float max(float a, float b)
-// {
-//   if(a > b)
-//   {
-//     return a;
-//   }
+float max(float a, float b)
+{
+  if(a > b)
+  {
+    return a;
+  }
 
-//   return b;
-// }
+  return b;
+}
 
-// float min(float a, float b)
-// {
-//   if(a < b)
-//   {
-//     return a;
-//   }
+float min(float a, float b)
+{
+  if(a < b)
+  {
+    return a;
+  }
 
-//   return b;
-// }
+  return b;
+}
 
-// float approach(float current, float target, float increase)
-// {
-//   if(current < target)
-//   {
-//     return min(current + increase, target);
-//   }
-//   return max(current - increase, target);
-// }
+float approach(float current, float target, float increase)
+{
+  if(current < target)
+  {
+    return min(current + increase, target);
+  }
+  return max(current - increase, target);
+}
 
-// float lerp(float a, float b, float t)
-// {
-//   return a + (b - a) * t;
-// }
+float lerp(float a, float b, float t)
+{
+  return a + (b - a) * t;
+}
 
 struct Vec2
 {
@@ -466,6 +515,7 @@ struct Vec4
   }
 };
 
+
 struct Mat4
 {
   union 
@@ -501,6 +551,10 @@ struct Mat4
   }
 };
 
+
+
+
+//https://learnwebgl.brown37.net/08_projections/projections_ortho.html
 Mat4 orthographic_projection(float left, float right, float top, float bottom)
 {
   Mat4 result = {};
@@ -555,3 +609,16 @@ bool rect_collision(IRect a, IRect b)
          a.pos.y < b.pos.y  + b.size.y && // Collision on Bottom of a and Top of b
          a.pos.y + a.size.y > b.pos.y;    // Collision on Top of a and Bottom of b
 }
+
+
+//#######################################################################
+//                          Normal Colors
+//#######################################################################
+constexpr Vec4 COLOR_WHITE = {1.0f, 1.0f, 1.0f, 1.0f};
+constexpr Vec4 COLOR_RED = {1.0f, 0.0f, 0.0f, 1.0f};
+constexpr Vec4 COLOR_GREEN = {0.0f, 1.0f, 0.0f, 1.0f};
+constexpr Vec4 COLOR_BLUE = {0.0f, 0.0f, 1.0f, 1.0f};
+constexpr Vec4 COLOR_YELLOW = {1.0f, 1.0f, 0.0f, 1.0f};
+constexpr Vec4 COLOR_BLACK = {0.0f, 0.0f, 0.0f, 1.0};
+
+

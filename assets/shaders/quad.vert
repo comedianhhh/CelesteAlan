@@ -1,7 +1,7 @@
 #version 430 core
 
-//Structs
-struct Transform
+// //Structs
+struct Transform 
 {
     vec2 pos;
     vec2 size;
@@ -10,14 +10,14 @@ struct Transform
 };
 
 
-// Input 
+//Buffers
 layout (std430, binding = 0) buffer TransformSBO
 {
-    Transform transforms[];
+  Transform transforms[];
 };
 
-
 uniform vec2 screenSize;
+uniform mat4 orthoProjection;
 // Output
 layout (location = 0 )out vec2 textureCoordsOut;
 
@@ -59,13 +59,13 @@ void main()
         vec2(right, bottom)
     };
 
-    // Normalizing Position
+    // Normalize Position
     {
         vec2 vertexPos = vertices[gl_VertexID];
-        vertexPos.y = -vertexPos.y + screenSize.y;
-        vertexPos = 2.0* (vertexPos / screenSize) - 1.0;
-        gl_Position = vec4(vertexPos, 0.0, 1.0);
-
+        // vertexPos.y = -vertexPos.y + screenSize.y;
+        // vertexPos = 2.0 * (vertexPos / screenSize) - 1.0;
+        gl_Position = orthoProjection * vec4(vertexPos, 0.0, 1.0);
     }
+
     textureCoordsOut = textureCoords[gl_VertexID];
 }

@@ -2,7 +2,7 @@
 
 // input
 layout (location = 0) in vec2 textureCoordsIn;
-
+layout (location = 1) in flat int renderOptions;
 
 // output
 layout(location = 0) out vec4 fragColor;

@@ -33,26 +33,30 @@ void reload_game_dll(BumpAllocator* transientStorage);
 int main()
 {
     BumpAllocator transientStorage = make_bump_allocator(MB(50));
-    BumpAllocator persisientStorage = make_bump_allocator(MB(50));
+    BumpAllocator persistentStorage = make_bump_allocator(MB(256));
 
-    input = (Input*)bump_alloc(&persisientStorage, sizeof(Input));
+    input = (Input*)bump_alloc(&persistentStorage, sizeof(Input));
     if(!input)
     {
         SM_ERROR("Failed to allocate input");
         return -1;
     }
 
-    renderData = (RenderData*)bump_alloc(&persisientStorage, sizeof(RenderData));
+    renderData = (RenderData*)bump_alloc(&persistentStorage, sizeof(RenderData));
     if(!renderData)
     {
         SM_ERROR("Failed to allocate renderData");
         return -1;
     }
 
-    platform_create_window(1200,720, "ALAN GAME");
+    gameState= (GameState*)bump_alloc(&persistentStorage, sizeof(GameState));
+    if(!gameState)
+    {
+        SM_ERROR("Failed to allocate gameState");
+        return -1;
+    }
 
-    input->screenSizeX = 1200;
-    input->screenSizeY = 720;
+    platform_create_window(1280,720, "ALAN GAME");
 
     gl_init(&transientStorage);
  
@@ -61,8 +65,8 @@ int main()
         reload_game_dll(&transientStorage);
         //update
         platform_update_window();
-        update_game(renderData,input);
-        gl_render();
+        update_game(gameState,renderData,input);
+        gl_render(&transientStorage);
 
         platform_sawp_buffers();
         transientStorage.used = 0;
@@ -70,9 +74,9 @@ int main()
     return 0;
 }
 
-void update_game(RenderData* renderDataIn, Input* inputIn)
+void update_game(GameState* gameStateIn,RenderData* renderDataIn, Input* inputIn)
 {
-    update_game_ptr(renderDataIn,inputIn);
+    update_game_ptr(gameStateIn,renderDataIn,inputIn);
 }
 
 void reload_game_dll(BumpAllocator* transientStorage)
