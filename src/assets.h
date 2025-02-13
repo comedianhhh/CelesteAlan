@@ -12,23 +12,13 @@
 enum SpriteID
 {
   SPRITE_WHITE,
-  SPRITE_DICE,
-  SPRITE_CELESTE,
-  SPRITE_CELESTE_RUN,
-  SPRITE_CELESTE_JUMP,
-  SPRITE_SOLID_01,
-  SPRITE_SOLID_02,  
-  SPRITE_BUTTON_PLAY,
-  SPRITE_BUTTON_SAVE,
-
-  SPRITE_COUNT
+  SPRITE_DICE
 };
 
 struct Sprite
 {
   IVec2 atlasOffset;
   IVec2 size;
-  int frameCount = 1;
 };
 
 // #############################################################################
@@ -37,8 +27,6 @@ struct Sprite
 Sprite get_sprite(SpriteID spriteID)
 {
   Sprite sprite = {};
-  sprite.frameCount = 1;
-
   switch(spriteID)
   {
     case SPRITE_WHITE:

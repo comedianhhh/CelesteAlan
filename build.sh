@@ -8,7 +8,7 @@ includes="-Ithird_party -Ithird_party/Include"
 outputFile="AlanAdventure.exe"
 
 
-rm -f game_ # Remove old game_* files
+rm -f game_* # Remove old game_* files
 clang++ -g "src/game.cpp" -shared -o game_$timestamp.dll $warnings
 mv game_$timestamp.dll game.dll
 

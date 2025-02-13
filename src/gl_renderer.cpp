@@ -10,7 +10,7 @@
 // #############################################################################
 //                           OpenGL Contants
 // #############################################################################
-const char* TEXTURE_PATH = "assets/textures/TEXTURE_ATLAS.png";
+const char* TEXTURE_PATH = "assets/textures/TEXTURE_ATLAS2.png";
 
 // #############################################################################
 //                           OpenGL Structs

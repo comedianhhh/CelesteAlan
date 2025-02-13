@@ -21,6 +21,6 @@ void main()
     {
         discard;
     }
-    //white quad
+
     fragColor = textureColor;
 }

@@ -2,8 +2,6 @@
 #include "input.h"
 #include "game.h"
 
-
-
 #define APIENTRY
 #define GL_GLEXT_PROTOTYPES
 #include"glcorearb.h"
