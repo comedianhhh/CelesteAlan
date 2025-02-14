@@ -40,8 +40,9 @@ struct KeyMapping
   Array<KeyCodeID, 3> keys;
 };
 
-struct Tile
+class Tile
 {
+  public:
   int neighbourMask;
   bool isVisible;
 }; 
@@ -55,8 +56,9 @@ enum PlayerAnimState
   PLAYER_ANIM_COUNT
 };
 
-struct Player
+class Player
 {
+  public:
   IVec2 pos;
   IVec2 prevPos;
   Vec2 speed;
@@ -65,10 +67,14 @@ struct Player
   float runAnimTime;
   PlayerAnimState animationState;
   SpriteID animationSprites[PLAYER_ANIM_COUNT];
+
+  void UpdatePlayer(float dt);
+
 };
 
-struct Solid
+class Solid
 {
+  public:
   SpriteID spriteID;
   IVec2 pos;
   IVec2 prevPos;
@@ -76,6 +82,16 @@ struct Solid
   Vec2 speed;
   int keyframeIdx;
   Array<IVec2, 2> keyframes;
+  
+  void UpdateSolid(float dt, Player& player);
+
+  
+  IRect get_solid_rect()
+  {
+    Sprite sprite = get_sprite(spriteID);
+    return {pos - sprite.size / 2, sprite.size};
+  }
+
 };
 
 enum GameStateID
@@ -84,8 +100,9 @@ enum GameStateID
   GAME_STATE_IN_LEVEL,
 };
 
-struct GameState
+class GameState
 {
+  public:
   GameStateID state;
   float updateTimer;
   bool initialized = false;
