@@ -3,12 +3,12 @@
   "configurations": [
     {
       "name": "Windows Launch",
-      "type": "cppvsdbg",
+      "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/AlanAdventure.exe",
       "args": [],
       "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal"
+      "externalConsole": true
     }
   ]
 }
