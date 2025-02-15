@@ -717,6 +717,8 @@ EXPORT_FN void update_game(GameState* gameStateIn,
   // Render
   float interpolatedDT = (float)(gameState->updateTimer / UPDATE_DELAY);
 
+
+  draw_ui_text("This is ALan's World\nYou can create your own levels\n****", {0, 20},{.material{.color = COLOR_BLACK}, .fontSize = 1.0f});
   // Draw Solids
   {
     for(int solidIdx = 0; solidIdx < gameState->solids.count; solidIdx++)

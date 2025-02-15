@@ -6,8 +6,8 @@
 #include "stb_image.h"
 
 // To Load TTF Files
-//#include <ft2build.h>
-//#include FT_FREETYPE_H
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 
 // #############################################################################
@@ -100,86 +100,86 @@ GLuint gl_create_shader(int shaderType, char* shaderPath, BumpAllocator* transie
   return shaderID;
 }
 
-// void load_font(char* filePath, int fontSize)
-// {
-//   FT_Library fontLibrary;
-//   FT_Init_FreeType(&fontLibrary);
+void load_font(char* filePath, int fontSize)
+{
+  FT_Library fontLibrary;
+  FT_Init_FreeType(&fontLibrary);
 
-//   FT_Face fontFace;
-//   FT_New_Face(fontLibrary, filePath, 0, &fontFace);
-//   FT_Set_Pixel_Sizes(fontFace, 0, fontSize);
+  FT_Face fontFace;
+  FT_New_Face(fontLibrary, filePath, 0, &fontFace);
+  FT_Set_Pixel_Sizes(fontFace, 0, fontSize);
 
-//   int padding = 2;
-//   int row = 0;
-//   int col = padding;
+  int padding = 2;
+  int row = 0;
+  int col = padding;
 
-//   const int textureWidth = 512;
-//   char textureBuffer[textureWidth  * textureWidth];
-//   for (FT_ULong glyphIdx = 32; glyphIdx < 127; ++glyphIdx)
-//   {
-//     FT_UInt glyphIndex = FT_Get_Char_Index(fontFace, glyphIdx);
-//     FT_Load_Glyph(fontFace, glyphIndex, FT_LOAD_DEFAULT);
-//     FT_Error error = FT_Render_Glyph(fontFace->glyph, FT_RENDER_MODE_NORMAL);
+  const int textureWidth = 512;
+  char textureBuffer[textureWidth  * textureWidth];
+  for (FT_ULong glyphIdx = 32; glyphIdx < 127; ++glyphIdx)
+  {
+    FT_UInt glyphIndex = FT_Get_Char_Index(fontFace, glyphIdx);
+    FT_Load_Glyph(fontFace, glyphIndex, FT_LOAD_DEFAULT);
+    FT_Error error = FT_Render_Glyph(fontFace->glyph, FT_RENDER_MODE_NORMAL);
 
-//     if (col + fontFace->glyph->bitmap.width + padding >= 512)
-//     {
-//       col = padding;
-//       row += fontSize;
-//     }
+    if (col + fontFace->glyph->bitmap.width + padding >= 512)
+    {
+      col = padding;
+      row += fontSize;
+    }
 
-//     // Font Height
-//     renderData->fontHeight = 
-//       max((fontFace->size->metrics.ascender - fontFace->size->metrics.descender) >> 6, 
-//           renderData->fontHeight);
+    // Font Height
+    renderData->fontHeight = 
+      max((fontFace->size->metrics.ascender - fontFace->size->metrics.descender) >> 6, 
+          renderData->fontHeight);
 
-//     for (unsigned int y = 0; y < fontFace->glyph->bitmap.rows; ++y)
-//     {
-//       for (unsigned int x = 0; x < fontFace->glyph->bitmap.width; ++x)
-//       {
-//         textureBuffer[(row + y) * textureWidth + col + x] =
-//             fontFace->glyph->bitmap.buffer[y * fontFace->glyph->bitmap.width + x];
-//       }
-//     }
+    for (unsigned int y = 0; y < fontFace->glyph->bitmap.rows; ++y)
+    {
+      for (unsigned int x = 0; x < fontFace->glyph->bitmap.width; ++x)
+      {
+        textureBuffer[(row + y) * textureWidth + col + x] =
+            fontFace->glyph->bitmap.buffer[y * fontFace->glyph->bitmap.width + x];
+      }
+    }
 
-//     Glyph* glyph = &renderData->glyphs[glyphIdx];
-//     glyph->textureCoords = {col, row};
-//     glyph->size = 
-//     { 
-//       (int)fontFace->glyph->bitmap.width, 
-//       (int)fontFace->glyph->bitmap.rows
-//     };
-//     glyph->advance = 
-//     {
-//       (float)(fontFace->glyph->advance.x >> 6), 
-//       (float)(fontFace->glyph->advance.y >> 6)
-//     };
-//     glyph->offset =
-//     {
-//       (float)fontFace->glyph->bitmap_left,
-//       (float)fontFace->glyph->bitmap_top,
-//     };
+    Glyph* glyph = &renderData->glyphs[glyphIdx];
+    glyph->textureCoords = {col, row};
+    glyph->size = 
+    { 
+      (int)fontFace->glyph->bitmap.width, 
+      (int)fontFace->glyph->bitmap.rows
+    };
+    glyph->advance = 
+    {
+      (float)(fontFace->glyph->advance.x >> 6), 
+      (float)(fontFace->glyph->advance.y >> 6)
+    };
+    glyph->offset =
+    {
+      (float)fontFace->glyph->bitmap_left,
+      (float)fontFace->glyph->bitmap_top,
+    };
 
-//     col += fontFace->glyph->bitmap.width + padding;
-//   }
+    col += fontFace->glyph->bitmap.width + padding;
+  }
 
-//   FT_Done_Face(fontFace);
-//   FT_Done_FreeType(fontLibrary);
+  FT_Done_Face(fontFace);
+  FT_Done_FreeType(fontLibrary);
 
-//   // Upload OpenGL Texture
-//   {
-//     glGenTextures(1, (GLuint*)&glContext.fontAtlasID);
-//     glActiveTexture(GL_TEXTURE1); // Bound to binding = 1, see quad.frag
-//     glBindTexture(GL_TEXTURE_2D, glContext.fontAtlasID);
+  // Upload OpenGL Texture
+  {
+    glGenTextures(1, (GLuint*)&glContext.fontAtlasID);
+    glActiveTexture(GL_TEXTURE1); // Bound to binding = 1, see quad.frag
+    glBindTexture(GL_TEXTURE_2D, glContext.fontAtlasID);
 
-//     glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, textureWidth, textureWidth, 0, 
-//                  GL_RED, GL_UNSIGNED_BYTE, (char*)textureBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, textureWidth, textureWidth, 0, 
+                 GL_RED, GL_UNSIGNED_BYTE, (char*)textureBuffer);
 
-//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//   }
-// }
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  }
+}
 
 
 bool gl_init(BumpAllocator* transientStorage)
@@ -267,7 +267,7 @@ bool gl_init(BumpAllocator* transientStorage)
 
   // Load Font
   {
-    //load_font("assets/fonts/AtariClassic-gry3.ttf", 8);
+    load_font("assets/fonts/AtariClassic-gry3.ttf", 8);
   }
 
   // Transform Storage Buffer

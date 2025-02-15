@@ -1,4 +1,3 @@
-// Input
 
 // Output
 layout (location = 0) out vec2 textureCoordsOut;
