@@ -8,7 +8,7 @@ timestamp=$(date +%s)
 
 
 echo "Running on Windows"
-libs="-luser32 -lopengl32 -lgdi32" #if adding a space before the value, making it invalid when passed to the compiler.
+libs="-luser32 -lopengl32 -lgdi32 -lole32" #if adding a space before the value, making it invalid when passed to the compiler.
 outputFile="AlanAdventure.exe"
 
 

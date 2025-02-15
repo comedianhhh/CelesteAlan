@@ -521,32 +521,32 @@ void platform_fill_keycode_lookup_table()
 
 bool platform_init_audio()
 {
-//   HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-// 	if(FAILED(hr)) { return false; }
+  HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	if(FAILED(hr)) { return false; }
 
-// 	IXAudio2* xaudio2 = nullptr;
-// 	hr = XAudio2Create(&xaudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
-// 	if(FAILED(hr)) { return false; }
+	IXAudio2* xaudio2 = nullptr;
+	hr = XAudio2Create(&xaudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
+	if(FAILED(hr)) { return false; }
 
-// 	IXAudio2MasteringVoice* master_voice = nullptr;
-// 	hr = xaudio2->CreateMasteringVoice(&master_voice);
-// 	if(FAILED(hr)) { return false; }
+	IXAudio2MasteringVoice* master_voice = nullptr;
+	hr = xaudio2->CreateMasteringVoice(&master_voice);
+	if(FAILED(hr)) { return false; }
 
-// 	WAVEFORMATEX wave = {};
-// 	wave.wFormatTag = WAVE_FORMAT_PCM;
-// 	wave.nChannels = NUM_CHANNELS;
-// 	wave.nSamplesPerSec = SAMPLE_RATE;
-// 	wave.wBitsPerSample = 16;
-// 	wave.nBlockAlign = (NUM_CHANNELS * wave.wBitsPerSample) / 8;
-// 	wave.nAvgBytesPerSec = SAMPLE_RATE * wave.nBlockAlign;
+	WAVEFORMATEX wave = {};
+	wave.wFormatTag = WAVE_FORMAT_PCM;
+	wave.nChannels = NUM_CHANNELS;
+	wave.nSamplesPerSec = SAMPLE_RATE;
+	wave.wBitsPerSample = 16;
+	wave.nBlockAlign = (NUM_CHANNELS * wave.wBitsPerSample) / 8;
+	wave.nAvgBytesPerSec = SAMPLE_RATE * wave.nBlockAlign;
 
-// 	for(int voiceIdx = 0; voiceIdx < MAX_CONCURRENT_SOUNDS; voiceIdx++)
-// 	{
-// 		xAudioVoice* voice = &voiceArr[voiceIdx];
-// 		hr = xaudio2->CreateSourceVoice(&voice->voice, &wave, 0, XAUDIO2_DEFAULT_FREQ_RATIO, voice, nullptr, nullptr);
-// 		voice->voice->SetVolume(musicVolume);
-// 		if(FAILED(hr)) { return false; }
-// 	}
+	for(int voiceIdx = 0; voiceIdx < MAX_CONCURRENT_SOUNDS; voiceIdx++)
+	{
+		xAudioVoice* voice = &voiceArr[voiceIdx];
+		hr = xaudio2->CreateSourceVoice(&voice->voice, &wave, 0, XAUDIO2_DEFAULT_FREQ_RATIO, voice, nullptr, nullptr);
+		voice->voice->SetVolume(musicVolume);
+		if(FAILED(hr)) { return false; }
+	}
 
  	return true;
 }
@@ -659,3 +659,4 @@ void platform_sleep(unsigned int ms)
 {
   Sleep(ms);
 }
+

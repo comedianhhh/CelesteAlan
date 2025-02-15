@@ -4,7 +4,7 @@
 //                           Platform Globals
 // #############################################################################
 static bool running = true;
-static float musicVolume = 0.25f;
+static float musicVolume = 1.0f;
 static KeyCodeID KeyCodeLookupTable[KEY_COUNT];
 
 // #############################################################################

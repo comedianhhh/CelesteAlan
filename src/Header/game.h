@@ -17,6 +17,11 @@ constexpr int TILESIZE = 8;
 constexpr IVec2 WORLD_GRID = {WORLD_WIDTH / TILESIZE, WORLD_HEIGHT / TILESIZE};
 
 // #############################################################################
+//                           Player Constants
+// #############################################################################
+
+
+// #############################################################################
 //                           Game Structs
 // #############################################################################
 enum GameInputType
@@ -69,9 +74,7 @@ class Player
   SpriteID animationSprites[PLAYER_ANIM_COUNT];
 
   void UpdatePlayer(float dt);
-
 };
-
 class Solid
 {
   public:
@@ -85,7 +88,6 @@ class Solid
   
   void UpdateSolid(float dt, Player& player);
 
-  
   IRect get_solid_rect()
   {
     Sprite sprite = get_sprite(spriteID);
@@ -132,3 +134,17 @@ extern "C"
                              UIState* uiStateIn,
                              float dt);
 }
+
+// Add these declarations in the Game Functions section
+void initialize_game();
+void initialize_player();
+void initialize_tileset();
+void update_game_state(float dt);
+void update_input_state();
+void fixed_update(float dt);
+void render_game(float interpolatedDT);
+void render_solids(float interpolatedDT);
+void render_player(float interpolatedDT);
+void initialize_key_mappings();
+void initialize_solids();
+void render_tileset();

@@ -115,7 +115,7 @@ void Player::UpdatePlayer(float dt)
     speed.y = jumpSpeed;
     speed.x += solidSpeed.x;
     speed.y += solidSpeed.y;
-    //play_sound("jump");
+    play_sound("jump");
     grounded = false;
   }
 
@@ -605,12 +605,46 @@ void update_main_menu(float dt)
 
 }
 
-void simulate()
+
+void update_game_state(float dt) 
 {
-    float dt = UPDATE_DELAY;
+    switch(gameState->state) 
+    {
+        case GAME_STATE_MAIN_MENU:
+            update_main_menu(dt);
+            break;
+            
+        case GAME_STATE_IN_LEVEL:
+            update_level(dt);
+            break;
+    }
+}
 
-    update_level(dt);
+void update_input_state() 
+{
+    // Clear the transitionCount for every key
+    for (int keyCode = 0; keyCode < KEY_COUNT; keyCode++)
+    {
+        input->keys[keyCode].justReleased = false;
+        input->keys[keyCode].justPressed = false;
+        input->keys[keyCode].halfTransitionCount = 0;
+    }
 
+    // Update relative mouse
+    input->relMouse = input->mousePos - input->prevMousePos;
+    input->prevMousePos = input->mousePos;
+}
+
+void fixed_update(float dt) 
+{
+    gameState->updateTimer += dt;
+    while(gameState->updateTimer >= UPDATE_DELAY)
+    {
+        gameState->updateTimer -= UPDATE_DELAY;
+        update_ui();
+        update_game_state(UPDATE_DELAY);
+        update_input_state();
+    }
 }
 
 // #############################################################################
@@ -669,116 +703,97 @@ EXPORT_FN void update_game(GameState* gameStateIn,
       gameState->tileCoords.add({tilesPosition.x, tilesPosition.y + 5 * 8});
     }
 
-    // Key Mappings
-    {
-      gameState->keyMappings[MOVE_UP].keys.add(KEY_W);
-      gameState->keyMappings[MOVE_UP].keys.add(KEY_UP);
-      gameState->keyMappings[MOVE_LEFT].keys.add(KEY_A);
-      gameState->keyMappings[MOVE_LEFT].keys.add(KEY_LEFT);
-      gameState->keyMappings[MOVE_DOWN].keys.add(KEY_S);
-      gameState->keyMappings[MOVE_DOWN].keys.add(KEY_DOWN);
-      gameState->keyMappings[MOVE_RIGHT].keys.add(KEY_D);
-      gameState->keyMappings[MOVE_RIGHT].keys.add(KEY_RIGHT);
-      gameState->keyMappings[MOUSE_LEFT].keys.add(KEY_MOUSE_LEFT);
-      gameState->keyMappings[MOUSE_RIGHT].keys.add(KEY_MOUSE_RIGHT);
-      gameState->keyMappings[JUMP].keys.add(KEY_SPACE);
-      gameState->keyMappings[PAUSE].keys.add(KEY_ESCAPE);
-    }
-
-    // Solids
-    {
-      Solid solid = {};
-      solid.spriteID = SPRITE_SOLID_01;
-      solid.keyframes.add({8 * 2,  8 * 10});
-      solid.keyframes.add({8 * 10, 8 * 10});
-      solid.pos = {8 * 2, 8 * 10};
-      solid.speed.x = 50.0f;
-      gameState->solids.add(solid);
-
-      solid = {};
-      solid.spriteID = SPRITE_SOLID_02;
-      solid.keyframes.add({12 * 20, 8 * 10});
-      solid.keyframes.add({12 * 20, 8 * 20});
-      solid.pos = {12 * 20, 8 * 10};
-      solid.speed.y = 50.0f;
-      gameState->solids.add(solid);
-    }
+    initialize_key_mappings();
+    initialize_solids();
 
     gameState->initialized = true;
+    gameState->state = GAME_STATE_IN_LEVEL;
   }
 
+  // Fixed Update Loop
+  fixed_update(dt);
 
+  // Render
+  float interpolatedDT = (float)(gameState->updateTimer / UPDATE_DELAY);
 
-
-    // Fixed Update Loop
+  // Draw Solids
+  {
+    for(int solidIdx = 0; solidIdx < gameState->solids.count; solidIdx++)
     {
-        gameState->updateTimer += dt;
-        while(gameState->updateTimer >= UPDATE_DELAY)
-        {
-        gameState->updateTimer -= UPDATE_DELAY;
-        update_ui();
-        simulate();
-
-        // Relative Mouse here, because more frames than simulations
-        input->relMouse = input->mousePos - input->prevMousePos;
-        input->prevMousePos = input->mousePos;
-
-        // Clear the transitionCount for every key
-        {
-            for (int keyCode = 0; keyCode < KEY_COUNT; keyCode++)
-            {
-            input->keys[keyCode].justReleased = false;
-            input->keys[keyCode].justPressed = false;
-            input->keys[keyCode].halfTransitionCount = 0;
-            }
-        }
-        }
+      Solid& solid = gameState->solids[solidIdx];
+      IVec2 solidPos = lerp(solid.prevPos, solid.pos, interpolatedDT);
+      draw_sprite(solid.spriteID, solidPos, {.layer = get_layer(LAYER_GAME, 0)});
     }
+  }
 
-    float interpolatedDT = (float)(gameState->updateTimer / UPDATE_DELAY);
+  // Draw Player
+  {
+    Player& player = gameState->player;
+    IVec2 playerPos = lerp(player.prevPos, player.pos, interpolatedDT);
+    draw_sprite(SPRITE_CELESTE, playerPos);
+  }
 
-    // Draw Solids
+  render_tileset();
+}
+
+void initialize_key_mappings()
+{
+    gameState->keyMappings[MOVE_UP].keys.add(KEY_W);
+    gameState->keyMappings[MOVE_UP].keys.add(KEY_UP);
+    gameState->keyMappings[MOVE_LEFT].keys.add(KEY_A);
+    gameState->keyMappings[MOVE_LEFT].keys.add(KEY_LEFT);
+    gameState->keyMappings[MOVE_DOWN].keys.add(KEY_S);
+    gameState->keyMappings[MOVE_DOWN].keys.add(KEY_DOWN);
+    gameState->keyMappings[MOVE_RIGHT].keys.add(KEY_D);
+    gameState->keyMappings[MOVE_RIGHT].keys.add(KEY_RIGHT);
+    gameState->keyMappings[MOUSE_LEFT].keys.add(KEY_MOUSE_LEFT);
+    gameState->keyMappings[MOUSE_RIGHT].keys.add(KEY_MOUSE_RIGHT);
+    gameState->keyMappings[JUMP].keys.add(KEY_SPACE);
+    gameState->keyMappings[PAUSE].keys.add(KEY_ESCAPE);
+}
+
+void initialize_solids()
+{
+    Solid solid = {};
+    solid.spriteID = SPRITE_SOLID_01;
+    solid.keyframes.add({8 * 2,  8 * 10});
+    solid.keyframes.add({8 * 10, 8 * 10});
+    solid.pos = {8 * 2, 8 * 10};
+    solid.speed.x = 50.0f;
+    gameState->solids.add(solid);
+
+    solid = {};
+    solid.spriteID = SPRITE_SOLID_02;
+    solid.keyframes.add({12 * 20, 8 * 10});
+    solid.keyframes.add({12 * 20, 8 * 20});
+    solid.pos = {12 * 20, 8 * 10};
+    solid.speed.y = 50.0f;
+    gameState->solids.add(solid);
+}
+
+void render_tileset()
+{
+    for(int y = 0; y < WORLD_GRID.y; y++)
     {
-        for(int solidIdx = 0; solidIdx < gameState->solids.count; solidIdx++)
-        {
-        Solid& solid = gameState->solids[solidIdx];
-        IVec2 solidPos = lerp(solid.prevPos, solid.pos, interpolatedDT);
-        draw_sprite(solid.spriteID, solidPos, {.layer = get_layer(LAYER_GAME, 0)});
-        }
-    }
-
-    // Draw Player
-    {
-        Player& player = gameState->player;
-        IVec2 playerPos = lerp(player.prevPos, player.pos, interpolatedDT);
-        draw_sprite(SPRITE_CELESTE, playerPos);
-        
-    }
-
-    // Drawing Tileset
-    {
-        for(int y = 0; y < WORLD_GRID.y; y++)
-        {
         for(int x = 0; x < WORLD_GRID.x; x++)
         {
             Tile* tile = get_tile(x, y);
 
             if(!tile->isVisible)
             {
-            continue;
+                continue;
             }
 
             // Draw Tile
             Transform transform = {};
             // Draw the Tile around the center
-            transform.materialIdx = get_material_idx({.color  = COLOR_WHITE});
+            transform.materialIdx = get_material_idx({.color = COLOR_WHITE});
             transform.pos = {x * (float)TILESIZE, y * (float)TILESIZE};
             transform.size = {8, 8};
             transform.spriteSize = {8, 8};
             transform.atlasOffset = gameState->tileCoords[tile->neighbourMask];
             transform.layer = get_layer(LAYER_GAME, 0);
             draw_quad(transform);
-        }
         }
     }
 }
