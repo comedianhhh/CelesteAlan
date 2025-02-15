@@ -484,6 +484,7 @@ void update_level(float dt)
   // Update Player
   Player& player = gameState->player;
   player.prevPos = player.pos;
+  player.animationState = PLAYER_ANIM_IDLE;
   player.UpdatePlayer(dt);
 
   // Update Solids
@@ -670,7 +671,7 @@ EXPORT_FN void update_game(GameState* gameStateIn,
 
   if(!gameState->initialized)
   {
-    // play_sound("First Steps", SOUND_OPTION_LOOP);
+    play_sound("First Steps", SOUND_OPTION_LOOP);
     renderData->gameCamera.dimensions = {WORLD_WIDTH, WORLD_HEIGHT};
     renderData->gameCamera.position.x = 160;
     renderData->gameCamera.position.y = -90;
@@ -730,7 +731,15 @@ EXPORT_FN void update_game(GameState* gameStateIn,
   {
     Player& player = gameState->player;
     IVec2 playerPos = lerp(player.prevPos, player.pos, interpolatedDT);
-    draw_sprite(SPRITE_CELESTE, playerPos);
+
+    Sprite sprite = get_sprite(player.animationSprites[player.animationState]);
+    int animationIdx = animate(&player.runAnimTime, sprite.frameCount, 0.6f);
+    draw_sprite(player.animationSprites[player.animationState], playerPos, 
+            {
+              .animationIdx = animationIdx,
+              .renderOptions = player.renderOptions,
+              .layer = get_layer(LAYER_GAME, 0)
+            });
   }
 
   render_tileset();
