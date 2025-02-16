@@ -10,7 +10,7 @@ enum StringID
 {
   STRING_CELESTE_CLONE,
   STRING_MADE_IN_CPP,
-
+  STRING_THIS_IS_ALANS_WORLD,
   STRING_COUNT
 };
 
@@ -21,11 +21,8 @@ void init_strings()
 {
   Strings[(int)LOCALIZATION_ENG + (int)STRING_CELESTE_CLONE] = "Celeste Clone";
   Strings[(int)LOCALIZATION_ENG + (int)STRING_MADE_IN_CPP] = "Made in C++";
-
+  Strings[(int)LOCALIZATION_ENG + (int)STRING_THIS_IS_ALANS_WORLD] = "This is ALan's World\nYou can create your own levels\n****";
   // German Translation, ö, Ö, ä, Ä, don't work like this!!!! I myself have no solution YET!
-  // But we will have a solution in the future
-  Strings[(int)LOCALIZATION_GER * STRING_COUNT + (int)STRING_CELESTE_CLONE] = "Celeste Klon";
-  Strings[(int)LOCALIZATION_GER * STRING_COUNT + (int)STRING_MADE_IN_CPP] = "Geschrieben in C++";
 }
 
 // This is the get string function
