@@ -577,6 +577,11 @@ void update_main_menu(float dt)
              .fontSize = 2.0f, 
              .layer = get_layer(LAYER_UI, 10)});
 
+    do_ui_text(_(STRING_CELESTE_CLONE), {56, 20}, 
+             {.material{.color = COLOR_BLACK}, 
+             .fontSize = 2.0f, 
+             .layer = get_layer(LAYER_UI, 10)});
+
   // FUll Screen Background
   do_ui_quad(
     {(float)WORLD_WIDTH / 2, (float)WORLD_HEIGHT / 2},
@@ -649,6 +654,8 @@ EXPORT_FN void update_game(GameState* gameStateIn,
     uiState = uiStateIn;
 
     init_strings();
+    //TODO: Add more strings to strings.h 
+    //Localization
   }
 
   if(!gameState->initialized)
